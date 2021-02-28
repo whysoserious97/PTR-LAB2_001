@@ -18,16 +18,23 @@ class Router extends Actor{
 
   val log: LoggingAdapter = Logging(context.system, this)
   var ds: ActorSelection = system.actorSelection("user/DS")
+  var ds2: ActorSelection = system.actorSelection("user/DS2")
   var paths: ListBuffer[akka.actor.ActorPath] = ListBuffer[akka.actor.ActorPath]()
+  var paths2: ListBuffer[akka.actor.ActorPath] = ListBuffer[akka.actor.ActorPath]() // Used for Worker2
 
   var future: Future[Any] = ds ? "workers"
   future.foreach(f => paths = f.asInstanceOf[ListBuffer[akka.actor.ActorPath]])
 
+  var future2: Future[Any] = ds2 ? "workers"
+  future2.foreach(f => paths2 = f.asInstanceOf[ListBuffer[akka.actor.ActorPath]])
+
   def receive = {
     case str: String => {
       val worker = system.actorSelection(paths.head)
-      val tweet = new Tweet(str,worker)
+      val worker2 = system.actorSelection(paths2.head)
+      val tweet = new Tweet(str,worker,worker2)
       val response =  worker ? tweet
+      worker2 ! tweet
       response.onComplete{
         case Success(_) =>{}
         case Failure(f) => {
@@ -38,14 +45,25 @@ class Router extends Actor{
       }
         paths += paths.head
         paths.remove(0)
+
+        paths2 += paths2.head
+        paths2.remove(0)
     }
-    case workers: ListBuffer[akka.actor.ActorPath] => {
-      paths = workers.clone()
+    case workers: ListBuffer[akka.actor.ActorPath]  => {
+       if (workers.head.parent.toString.contains("DS2")){  //workers.head.getClass.toString.contains("_Lab2")
+         paths2 = workers.clone()
+       }
+       else {
+         paths = workers.clone()
+       }
+
     }
     case tweet: Tweet => {
       val worker = system.actorSelection(paths(Random.nextInt(paths.length)))
+   //   val worker2 = system.actorSelection(paths2(Random.nextInt(paths2.length)))
       if ( !tweet.isExecuted){
         val response =  worker ? tweet
+       // worker2 ! tweet
         response.onComplete{
           case Success(_) =>{}
          case Failure(f) => {

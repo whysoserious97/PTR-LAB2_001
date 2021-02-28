@@ -15,15 +15,15 @@ class DatabaseManager extends Actor{
   var statement: Statement = con.createStatement
   var count = 0;
   var MAX_BATCH_SIZE = 2
-  self ! "Andrei"
-  self ! "Ion"
-
-  self ! "Gheorghe"
-  self ! "Luca"
-
-  self ! "Petru"
-  self ! "Radu"
-  self ! "execute"
+//  self ! "Andrei"
+//  self ! "Ion"
+//
+//  self ! "Gheorghe"
+//  self ! "Luca"
+//
+//  self ! "Petru"
+//  self ! "Radu"
+//  self ! "execute"
 
 
   def receive: Receive = {

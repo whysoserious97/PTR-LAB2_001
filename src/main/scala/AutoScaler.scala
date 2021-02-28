@@ -9,6 +9,7 @@ class AutoScaler extends Actor{
 
 
   var ds: ActorSelection = system.actorSelection("user/DS")
+  var ds2: ActorSelection = system.actorSelection("user/DS2")
   var events = new ListBuffer[Event]()
   var periodicity = 100
   var messagesPerTime = 0;
@@ -36,6 +37,7 @@ class AutoScaler extends Actor{
       difference =Calendar.getInstance().getTime.getTime - currentEvent.time
     }
     ds ! messagesPerTime
+    ds2 ! messagesPerTime
   }
 }
 class Event(var message:String, var time:Long)

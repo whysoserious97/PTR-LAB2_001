@@ -22,3 +22,4 @@ libraryDependencies ++= Seq(
 )
 libraryDependencies += "com.typesafe.akka" %% "akka-http-jackson" % AkkaHttpVersion
 libraryDependencies += "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion
+libraryDependencies += "mysql" % "mysql-connector-java" % "8.0.11"

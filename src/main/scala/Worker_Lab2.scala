@@ -24,8 +24,17 @@ class Worker_Lab2 extends Actor{
       if (!tweet.content.contains("panic")){
         //  println("From Worker 2")
         val data = ujson.read(tweet.content)
-        val favorites = data("message")("tweet")("user")("favourites_count").toString().toInt
-        val retweets = data("message")("tweet")("user")("retweet_count").toString().toInt
+
+        if(data("message")("tweet").obj.contains("retweeted_status")){
+          tweet.original_favorites = data("message")("tweet")("retweeted_status")("favorite_count").toString().toInt
+          tweet.original_retweets = data("message")("tweet")("retweeted_status")("retweet_count").toString().toInt
+          tweet.original_followers = data("message")("tweet")("retweeted_status")("user")("followers_count").toString().toInt
+          tweet.original_engagement = if (tweet.original_followers != 0) (tweet.original_retweets + tweet.original_favorites)/tweet.original_followers else 0;
+        }
+
+
+        val favorites = data("message")("tweet")("favorite_count").toString().toInt
+        val retweets = data("message")("tweet")("retweet_count").toString().toInt
         val followers = data("message")("tweet")("user")("followers_count").toString().toInt
         tweet.engagement = if (followers == 0) (retweets + favorites)/followers else 0;
         agregator ! tweet

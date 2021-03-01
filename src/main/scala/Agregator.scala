@@ -5,19 +5,23 @@ import scala.collection.mutable.ListBuffer
 class Agregator extends Actor{
 
   var dbManager: ActorSelection = context.system.actorSelection("user/DBManager")
-  var tweets = ListBuffer[Tweet]()
+  var tweets: Set[Tweet] = Set[Tweet]()
 
   def receive: Receive = {
     case tweet:Tweet =>{
-      if (tweet.engagement != -1 && tweet.isExecuted ){
-        tweets.append(tweet)
+      tweet.recieved_count +=1
+      if (tweet.recieved_count == 2 ){
+        tweets += tweet
+      }
+      if (tweets.size == 10){
+        println("here")
       }
     }
     case integer: Int =>{
-      var toSend = ListBuffer[Tweet]()
-      while (tweets.nonEmpty && toSend.length < integer){
-        toSend.append(tweets.remove(0))
-      }
+      var toSend = Set[Tweet]()
+        toSend ++=  tweets.take(integer)
+      tweets --= toSend
+
       dbManager ! toSend
     }
   }

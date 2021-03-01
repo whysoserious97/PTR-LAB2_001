@@ -10,6 +10,13 @@ class Tweet (var content:String,var worker: ActorSelection,var worker2: ActorSel
   var result: Int  = 0
   var engagement: Float = -1
 
+  var original_favorites:Int = 0
+  var original_retweets:Int = 0
+  var original_followers:Int = 0
+  var original_engagement:Float = -1 // if there is retweeted_status, this will be computed
+
+  var recieved_count = 0
+
   def addWorker(worker: ActorSelection): Unit ={
     workers.appended(worker)
   }

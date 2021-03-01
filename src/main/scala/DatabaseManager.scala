@@ -1,10 +1,14 @@
-import akka.actor.{Actor, ActorSelection}
+import akka.actor.{Actor, ActorSelection, ActorSystem}
 import akka.event.{Logging, LoggingAdapter}
+import akka.pattern.ask
+import akka.util.Timeout
 
 import scala.Console._
 import scala.io.Source
-import scala.util.Random
+import scala.util.{Failure, Random, Success}
 import java.sql.{Connection, DriverManager, Statement}
+import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.duration.DurationDouble
 
 class DatabaseManager extends Actor{
 
@@ -15,7 +19,12 @@ class DatabaseManager extends Actor{
   var statement: Statement = con.createStatement
   var count = 0;
   var MAX_BATCH_SIZE = 2
-//  self ! "Andrei"
+  var agregator: ActorSelection = context.system.actorSelection("user/Agregator")
+
+  implicit  val system: ActorSystem = context.system;
+  implicit val timeout: Timeout = Timeout(6 seconds)
+  implicit val dispatcher: ExecutionContextExecutor = context.dispatcher
+  //  self ! "Andrei"
 //  self ! "Ion"
 //
 //  self ! "Gheorghe"
@@ -27,6 +36,19 @@ class DatabaseManager extends Actor{
 
 
   def receive: Receive = {
+    case "pull" =>{
+
+      val response = agregator ? 30
+      response.onComplete{
+        case Success(tweets) =>{
+          println(tweets)
+        }
+        case Failure(f) => {
+
+        }
+          self ! "pull"
+      }
+    }
     case "execute" =>{
       if(count != 0){
         count=0

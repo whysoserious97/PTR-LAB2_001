@@ -18,7 +18,7 @@ class DatabaseManager extends Actor{
   var con: Connection = getConnection()
   var statement: Statement = con.createStatement
   var count = 0;
-  var MAX_BATCH_SIZE = 2
+  var MAX_BATCH_SIZE = 128
   var agregator: ActorSelection = context.system.actorSelection("user/Agregator")
 
   implicit  val system: ActorSystem = context.system;

@@ -9,6 +9,7 @@ import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util.{Failure, Random, Success}
+import java.util.UUID.randomUUID
 
 class Router extends Actor{
 
@@ -32,13 +33,14 @@ class Router extends Actor{
     case str: String => {
       val worker = system.actorSelection(paths.head)
       val worker2 = system.actorSelection(paths2.head)
-      val tweet = new Tweet(str,worker,worker2)
-      val response =  worker ? tweet
-      worker2 ! tweet
+      //val tweet = new Tweet(str,worker,worker2)
+      var tweetMap: Map[String,String] = Map("id" -> randomUUID().toString,"str" -> str)
+      val response =  worker ? tweetMap    ////////////////////////////////////////////TO CONTINUE MAP HANDLING
+      worker2 ! tweetMap
       response.onComplete{
         case Success(_) =>{}
         case Failure(f) => {
-          self ! tweet
+          self ! tweetMap
           log.warning(s"${RED_B}Speculative execution started${RESET}")
 
         }

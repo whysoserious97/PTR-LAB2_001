@@ -14,35 +14,35 @@ import scala.concurrent.duration.DurationInt
 class Connector extends Actor {
 
 
-  implicit  val system: ActorSystem = context.system;
+  implicit val system : ActorSystem = context.system;
   implicit val dispatcher = context.dispatcher
 
-  var router: ActorSelection = system.actorSelection("user/R")
-  var autoScaler: ActorSelection = system.actorSelection("user/AS")
+  var router : ActorSelection = system.actorSelection("user/R")
+  var autoScaler : ActorSelection = system.actorSelection("user/AS")
 
-  def receive: Receive = {
+  def receive : Receive = {
     case "test" => {
 
-      val send: HttpRequest => Future[HttpResponse] =
+      val send : HttpRequest => Future[ HttpResponse ] =
         Http().singleRequest(_)
-      val eventSource: Source[ServerSentEvent, NotUsed] = EventSource(
+      val eventSource : Source[ ServerSentEvent, NotUsed ] = EventSource(
         uri = Uri(s"http://localhost:4000/tweets/1"),
         send,
         initialLastEventId = None,
         retryDelay = 1.second
       )
-      val eventSource2: Source[ServerSentEvent, NotUsed] = EventSource(
+      val eventSource2 : Source[ ServerSentEvent, NotUsed ] = EventSource(
         uri = Uri(s"http://localhost:4000/tweets/2"),
         send,
         initialLastEventId = None,
         retryDelay = 1.second
       )
-      while (true){
+      while (true) {
         val future = eventSource.throttle(1, 1.milliseconds, 1, ThrottleMode.Shaping).take(20).runWith(Sink.seq)
         val future2 = eventSource2.throttle(1, 1.milliseconds, 1, ThrottleMode.Shaping).take(20).runWith(Sink.seq)
         future.foreach(se => se.foreach(
           ev => {
-           val event = ev.getData();
+            val event = ev.getData();
 
             router ! event
             autoScaler ! event
@@ -54,7 +54,7 @@ class Connector extends Actor {
             router ! event
             autoScaler ! event
           }))
-        while (!future.isCompleted || !future2.isCompleted){}
+        while (!future.isCompleted || !future2.isCompleted) {}
       }
 
     }

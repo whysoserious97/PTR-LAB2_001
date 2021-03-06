@@ -34,14 +34,14 @@ class Router extends Actor{
       val worker = system.actorSelection(paths.head)
       val worker2 = system.actorSelection(paths2.head)
       //val tweet = new Tweet(str,worker,worker2)
-      var tweetMap: Map[String,String] = Map("id" -> randomUUID().toString,"str" -> str)
-      val response =  worker ? tweetMap    ////////////////////////////////////////////TO CONTINUE MAP HANDLING
+      var tweetMap: Map[String,String] = Map("id" -> randomUUID().toString,"content" -> str)
+      val response =  worker ? tweetMap
       worker2 ! tweetMap
       response.onComplete{
         case Success(_) =>{}
         case Failure(f) => {
-          self ! tweetMap
-          log.warning(s"${RED_B}Speculative execution started${RESET}")
+//          self ! tweetMap
+//          log.warning(s"${RED_B}Speculative execution started${RESET}")
 
         }
       }
@@ -75,6 +75,6 @@ class Router extends Actor{
         }
       }
     }
-    case _ => log.info("received unknown message")
+    case z => log.info(z.toString)
   }
 }

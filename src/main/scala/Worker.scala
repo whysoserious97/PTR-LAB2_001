@@ -42,10 +42,6 @@ class Worker extends Actor{
            analyzer ! chunk
           }
         }
-     //   if(tweet.toExecute()){
-//          log.info(s"Input"+message + s"${RESET}")
-//          log.info(s"${GREEN_B}Scored Words"+scoredWords + s"${RESET}")
-//          log.info(s"${WHITE_B}Result"+result + s"${RESET}")
 
         var resultMap = Map[String,Any]()
         resultMap += ("user_name" -> user_name)
@@ -55,12 +51,9 @@ class Worker extends Actor{
         resultMap += ("source" -> "worker1")
         resultMap ++= tweet
 
+        agregator ! resultMap
 
-          agregator ! resultMap    // NOW ON WORKER2 NEED To continue
-          //tweet.postExecution()
-       // }
         sender() ! "Success"
-
       }
       else {
         log.info(s"${RED}Exception throwed" + s"${RESET}")

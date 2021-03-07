@@ -3,7 +3,6 @@ import akka.actor.ActorSelection
 import scala.collection.mutable.ListBuffer
 
 class Tweet (){
-  //var workers: ListBuffer[ActorSelection] = ListBuffer[ActorSelection]().appended(worker)
   var isExecuted = false
   var message :String = ""
   var scoredWords :ListBuffer[String] = ListBuffer[String]()
@@ -28,9 +27,6 @@ class Tweet (){
 
   var retweeted = false
 
-//  def addWorker(worker: ActorSelection): Unit ={
-//    workers.appended(worker)
-//  }
 
   def toExecute(): Boolean ={
     this.synchronized{

@@ -15,7 +15,7 @@ class Router extends Actor{
 
   implicit  val system: ActorSystem = context.system;
   implicit val dispatcher: ExecutionContextExecutor = context.dispatcher
-  implicit val timeout: Timeout = Timeout(0.6 seconds)
+  implicit val timeout: Timeout = Timeout(5 seconds)
 
   val log: LoggingAdapter = Logging(context.system, this)
   var ds: ActorSelection = system.actorSelection("user/DS")
@@ -29,19 +29,19 @@ class Router extends Actor{
   var future2: Future[Any] = ds2 ? "workers"
   future2.foreach(f => paths2 = f.asInstanceOf[ListBuffer[akka.actor.ActorPath]])
 
-  def receive = {
+  def receive : Receive = {
     case str: String => {
       val worker = system.actorSelection(paths.head)
       val worker2 = system.actorSelection(paths2.head)
-      //val tweet = new Tweet(str,worker,worker2)
-      var tweetMap: Map[String,String] = Map("id" -> randomUUID().toString,"content" -> str)
+
+      val tweetMap : Map[ String, String ] = Map("id" -> randomUUID().toString, "content" -> str)
       val response =  worker ? tweetMap
       worker2 ! tweetMap
       response.onComplete{
         case Success(_) =>{}
         case Failure(f) => {
-//          self ! tweetMap
-//          log.warning(s"${RED_B}Speculative execution started${RESET}")
+          self ! tweetMap
+          log.warning(s"${RED_B}Speculative execution started${RESET}")
 
         }
       }
@@ -62,16 +62,13 @@ class Router extends Actor{
     }
     case tweet: Tweet => {
       val worker = system.actorSelection(paths(Random.nextInt(paths.length)))
-   //   val worker2 = system.actorSelection(paths2(Random.nextInt(paths2.length)))
       if ( !tweet.isExecuted){
         val response =  worker ? tweet
-       // worker2 ! tweet
         response.onComplete{
-          case Success(_) =>{}
-         case Failure(f) => {
-           self ! tweet
-           log.warning(s"${RED_B}Speculative execution started${RESET}")
-          }
+          case Success(_) =>
+          case Failure(f) =>
+            self ! tweet
+            log.warning(s"${RED_B}Speculative execution started${RESET}")
         }
       }
     }

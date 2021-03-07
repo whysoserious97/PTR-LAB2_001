@@ -1,16 +1,16 @@
 
-import akka.actor.{Actor, ActorSelection}
+import akka.actor.{Actor, ActorSelection, ActorSystem}
 
 import java.util.Calendar
 import scala.collection.mutable.ListBuffer
 
 class AutoScaler extends Actor {
-  implicit val system = context.system;
+  implicit val system : ActorSystem = context.system;
 
 
   var ds : ActorSelection = system.actorSelection("user/DS")
   var ds2 : ActorSelection = system.actorSelection("user/DS2")
-  var events = new ListBuffer[Event]()
+  var events = new ListBuffer[ Event ]()
   var periodicity = 100
   var messagesPerTime = 0;
 

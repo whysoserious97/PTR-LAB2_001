@@ -3,15 +3,16 @@ import akka.event.{Logging, LoggingAdapter}
 
 import java.util.Calendar
 import scala.Console._
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 class Analyzer extends Actor {
   val log : LoggingAdapter = Logging(context.system, this)
 
   var hashtags = new ListBuffer[HashtagRecord]()
-  var hashtagMap = collection.mutable.Map[String, Int]().withDefaultValue(0)
+  var hashtagMap : mutable.Map[String, Int ] = collection.mutable.Map[String, Int]().withDefaultValue(0)
 
-  override def receive = {
+  override def receive : Receive = {
 
     case str : String => {
       val time = Calendar.getInstance().getTime.getTime
@@ -45,7 +46,7 @@ class Analyzer extends Actor {
       self ! topX
     }
 
-    case _ => {}
+    case _ =>
   }
 }
 

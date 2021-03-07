@@ -28,7 +28,6 @@ class Agregator extends Actor {
         tweet.message = tweetMap("message").toString
         tweet.result = tweetMap("result").toString.toInt
         tweet.scoredWords = tweetMap("scoredWords").asInstanceOf[ListBuffer[String]]
-        //        println("Hello")
       }
       else if ( tweetMap("source") == "worker2" ) {
         tweet.engagement = tweetMap("engagement").toString.toInt
@@ -43,16 +42,12 @@ class Agregator extends Actor {
           tweet.original_retweets = tweetMap("original_retweets").toString.toInt
           tweet.original_user_name = tweetMap("original_user_name").toString
           tweet.retweeted = tweetMap("retweeted").toString.toBoolean
-          //     println("Retweeted")
         }
       }
       if ( tweet.recieved_count == 2 ) {
         tweets += tweet
         waitingRoom -= tweet
       }
-      //      if (tweets.size == 10){
-      //        println("here")
-      //      }
     }
     case integer : Int => {
       var toSend = Set[Tweet]()

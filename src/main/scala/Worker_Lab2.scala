@@ -2,41 +2,30 @@ import akka.actor.{Actor, ActorSelection}
 import akka.event.{Logging, LoggingAdapter}
 
 import scala.Console._
-import scala.io.Source
 import scala.util.Random
 
 class Worker_Lab2 extends Actor{
 
-  //val lines = Source.fromFile("src/main/scala/em.txt").getLines.toList
   var analyzer: ActorSelection = context.system.actorSelection("user/Analyzer")
   var agregator: ActorSelection = context.system.actorSelection("user/Agregator")
+  var userEngagementActor: ActorSelection = context.system.actorSelection("user/UE")
   val log: LoggingAdapter = Logging(context.system, this)
   var emotion: Map[String, Int] = Map[String, Int]()
-//  for (line <- lines){
-//    val splited = line.split("\t")
-//    emotion = emotion + (splited(0) -> splited(1).toInt)
-//  }
 
   def receive: Receive = {
     case tweet: Map[String,String] => {
       val delay =Random.nextInt(450) + 50  // (0-450) + 50 = > 50 - 500 ms delay
       Thread.sleep(delay)
       if (!tweet("content").contains("panic")){
-        //  println("From Worker 2")
         var tweetMap = Map[String,Any]()
         tweetMap += ("id" -> tweet("id"))
 
-        try {
-          val data = ujson.read(tweet("content"))
-        }catch {
-          case e:Exception => {
-            println(e)
-          }
-        }
         val data = ujson.read(tweet("content"))
-
         if(data("message")("tweet").obj.contains("retweeted_status")){
           tweetMap += ("retweeted" -> true)
+          var original_user_name = data("message")("tweet")("retweeted_status")("user")("screen_name").toString()
+          original_user_name = original_user_name.substring(1,original_user_name.length-1)
+          tweetMap += ("original_user_name" -> original_user_name)
 
           tweetMap += ("original_favorites" ->
             data("message")("tweet")("retweeted_status")("favorite_count").toString().toInt)
@@ -60,10 +49,12 @@ class Worker_Lab2 extends Actor{
         val favorites = data("message")("tweet")("favorite_count").toString().toInt
         val retweets = data("message")("tweet")("retweet_count").toString().toInt
         val followers = data("message")("tweet")("user")("followers_count").toString().toInt
-        var original_user_name = data("message")("tweet")("retweeted_status")("user")("screen_name").toString()
-        original_user_name = original_user_name.substring(1,original_user_name.length-1)
 
-        tweetMap += ("original_user_name" -> original_user_name)
+        var user_name = data("message")("tweet")("user")("screen_name").toString()
+        user_name = user_name.substring(1,user_name.length-1)
+
+
+        tweetMap += ("user_name" -> user_name)
         tweetMap += ("favorites" -> favorites)
         tweetMap += ("retweets" -> retweets)
         tweetMap += ("followers" -> followers)
@@ -74,15 +65,15 @@ class Worker_Lab2 extends Actor{
 
         tweetMap ++= tweet
         agregator ! tweetMap
+        userEngagementActor ! tweetMap
       }
       else {
         log.info(s"${RED}Exception throwed" + s"${RESET}")
-       // sender ! "Success"
         throw new Exception("Panic!!!!!!!!!!!!")
       }
     }
   }
-  override def postRestart(reason:Throwable){    // overriding preStart method
+  override def postRestart(reason:Throwable){
     log.info(s"${CYAN}I am restarted and reason is "+reason.getMessage + s"${RESET}")
   }
 

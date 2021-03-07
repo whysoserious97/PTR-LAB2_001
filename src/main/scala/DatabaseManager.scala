@@ -1,10 +1,8 @@
 import akka.actor.{Actor, ActorSelection, ActorSystem}
-import akka.event.{Logging, LoggingAdapter}
 import akka.pattern.ask
 import akka.util.Timeout
 
 import scala.Console._
-import scala.io.Source
 import scala.util.{Failure, Random, Success}
 import java.sql.{Connection, DriverManager, PreparedStatement, Statement}
 import scala.concurrent.ExecutionContextExecutor
@@ -24,35 +22,22 @@ class DatabaseManager extends Actor {
   var pstmt_user:PreparedStatement = con.prepareStatement(
     "INSERT INTO tweeter_user (user_name) " +
       " VALUES(?)");
-  var pstmt_tweet:PreparedStatement = con.prepareStatement("INSERT INTO tweet (message,userID,engagement,is_original) VALUES(?,(SELECT id FROM tweeter_user WHERE user_name = ? LIMIT 1),?,?)")
+  var pstmt_tweet:PreparedStatement = con.prepareStatement("INSERT INTO tweet (message,userID,engagement,is_original) " +
+    "VALUES(?,(SELECT id FROM tweeter_user WHERE user_name = ? LIMIT 1),?,?)")
 
   implicit val system : ActorSystem = context.system;
   implicit val timeout : Timeout = Timeout(6 seconds)
   implicit val dispatcher : ExecutionContextExecutor = context.dispatcher
-  //  self ! "Andrei"
-  //  self ! "Ion"
-  //
-  //  self ! "Gheorghe"
-  //  self ! "Luca"
-  //
-  //  self ! "Petru"
-  //  self ! "Radu"
   self ! "execute"
-
 
   def receive : Receive = {
     case "pull" => {
-
-      val response = agregator ? 30
+      val response = agregator ? (Random.nextInt(50) + 10)  // Request a random int between [10 , 60)
       response.onComplete {
-        case Success(tweets) => {
-          self ! tweets
-        }
-        case Failure(f) => {
-
-        }
-
+        case Success(tweets) => self ! tweets
+        case Failure(f) =>
       }
+
       while (!response.isCompleted) {}
       Thread.sleep(1000)
       self ! "pull"
@@ -71,12 +56,9 @@ class DatabaseManager extends Actor {
     case tweets : Set[Tweet] => {
       tweets.foreach(
         tweet => {
-//          val querry1 = "INSERT INTO tweeter_user(user_name) VALUES('" + tweet.user_name + "')"
-//          println(querry1)
           pstmt_user.setString(1,tweet.user_name)
           pstmt_user.addBatch()
-//          val querry2 = "INSERT INTO tweet(message,userID) VALUES('" + tweet.message + "',(SELECT id FROM tweeter_user WHERE user_name = '"+tweet.user_name+"'))"
-//          println(querry2)
+
           pstmt_tweet.setString(1,tweet.message)
           pstmt_tweet.setString(2,tweet.user_name)
           pstmt_tweet.setFloat(3,tweet.engagement)
@@ -108,8 +90,9 @@ class DatabaseManager extends Actor {
 
   def createTable() : Unit = {
     try {
-      var con : Connection = getConnection()
-      var create = con.prepareStatement("CREATE TABLE IF NOT EXISTS tweeter_user(id int NOT NULL AUTO_INCREMENT primary key,user_name varchar(255))")
+      val con : Connection = getConnection()
+      var create = con.prepareStatement("CREATE TABLE IF NOT EXISTS " +
+        "tweeter_user(id int NOT NULL AUTO_INCREMENT primary key,user_name varchar(255))")
       create.executeUpdate();
 
       create = con.prepareStatement("CREATE TABLE IF NOT EXISTS " +
@@ -125,7 +108,6 @@ class DatabaseManager extends Actor {
     }
   }
 
-
   def getConnection() : Connection = {
     try {
       val driver = "com.mysql.cj.jdbc.Driver" // com.mysql.jdbc.Driver
@@ -134,11 +116,10 @@ class DatabaseManager extends Actor {
       val password = "andrei1997!!!"
       Class.forName(driver)
       connection = DriverManager.getConnection(url, username, password)
-      // create the statement, and run the select query
       return connection
     } catch {
       case e : Throwable => e.printStackTrace()
     }
-    return null
+    null
   }
 }

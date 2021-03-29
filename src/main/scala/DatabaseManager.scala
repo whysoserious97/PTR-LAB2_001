@@ -18,6 +18,7 @@ class DatabaseManager extends Actor {
   var count = 0;
   var MAX_BATCH_SIZE = 128
   var agregator : ActorSelection = context.system.actorSelection("user/Agregator")
+  var udp: ActorSelection = context.system.actorSelection("user/UDP")
 
   var pstmt_user:PreparedStatement = con.prepareStatement(
     "INSERT INTO tweeter_user (user_name) " +
@@ -57,6 +58,7 @@ class DatabaseManager extends Actor {
       tweets.foreach(
         tweet => {
           pstmt_user.setString(1,tweet.user_name)
+          udp ! tweet.user_name
           pstmt_user.addBatch()
 
           pstmt_tweet.setString(1,tweet.message)

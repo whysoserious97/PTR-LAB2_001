@@ -1,4 +1,6 @@
-import akka.actor.{ActorSystem, Props}
+import akka.actor.{ActorRef, ActorSystem, Props}
+
+import java.net.InetSocketAddress
 
 object MainApp{
         val actorSystem:ActorSystem=ActorSystem("ActorSystem")
@@ -16,6 +18,9 @@ object MainApp{
         Con!"test"
         dataAnalyser ! 10
         databaseManager ! "pull"
+                val remote = new InetSocketAddress("localhost", 5005)
+                val local = new InetSocketAddress("localhost", 5115)
 
+                val udp: ActorRef = actorSystem.actorOf(ScheduledSenderActor(local, remote), name = "UDP")
         }
         }

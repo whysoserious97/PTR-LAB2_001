@@ -12,17 +12,22 @@ class ScheduledSenderActor(local: InetSocketAddress, remote: InetSocketAddress) 
   import context.system
 
   IO(Udp) ! Udp.Bind(self, local)
- // val scheduleCancellable: Cancellable = system.scheduler.schedule(0.seconds, 1.second, self, "hello")
+
+  //val scheduleCancellable: Cancellable = system.scheduler.schedule(0.seconds, 1.second, self, "hello")
+
 
   def receive = {
-    case Udp.Bound(_) ⇒
+    case Udp.Bound(_) ⇒{
       context.become(ready(sender()))
+      self ! "PublishSubscribe"
+      //self ! "PublishUnsubscribe"
+    }
   }
 
   def ready(send: ActorRef): Receive = {
     case msg: String ⇒
       send ! Udp.Send(ByteString(msg), remote)
-      println("Sender: send:"+send+ "remote:"+remote)
+      println("Sender: send:"+msg+ "remote:"+remote)
      // send ! Udp.Send(ByteString("from ready"), remote)
      // println("From ready" + msg)
 

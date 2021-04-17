@@ -19,22 +19,35 @@ class ScheduledSenderActor(local: InetSocketAddress, remote: InetSocketAddress) 
   def receive = {
     case Udp.Bound(_) ⇒{
       context.become(ready(sender()))
-      self ! "PublishSubscribe"
+      var connectPub = new ConnectPub()
+      connectPub.addTopic("users")
+      self ! connectPub.stringify()
       //self ! "PublishUnsubscribe"
     }
   }
 
   def ready(send: ActorRef): Receive = {
-    case msg: String ⇒
+    case msg: String ⇒{
       send ! Udp.Send(ByteString(msg), remote)
       println("Sender: send:"+msg+ "remote:"+remote)
+    }
+    case tweet:Tweet=>{
+      println("tweet is ready");
+      var msg = tweet.stringifyTweet()
+      send ! Udp.Send(ByteString(msg), remote)
+      msg = tweet.stringifyUser()
+      send ! Udp.Send(ByteString(msg), remote)
+    }
      // send ! Udp.Send(ByteString("from ready"), remote)
      // println("From ready" + msg)
 
     case Udp.Received(data, remoteAddress) ⇒
       val ipAddress = remoteAddress.getAddress.getHostAddress
       val port = remoteAddress.asInstanceOf[InetSocketAddress].getPort
-      log.info(s"we received ${data.utf8String} from IP Address: $ipAddress and port number: $port")
+      if (data.utf8String.startsWith("ACK")){
+        println(data.utf8String)
+      }
+      //log.info(s"we received ${data.utf8String} from IP Address: $ipAddress and port number: $port")
   }
 }
 

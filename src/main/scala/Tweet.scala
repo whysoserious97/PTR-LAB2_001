@@ -40,4 +40,25 @@ class Tweet (){
     }
 
   }
+
+  def stringifyTweet():String = {
+    var result:String = ""
+    val topic = "tweet"
+    result = s"JSONTweet{topic:$topic|" +
+      s"engagement:${this.engagement}|" +
+      s"isOriginal:${!this.retweeted}|" +
+      s"""message:"${this.message}"""" +
+      s"}";
+
+    result
+  }
+  def stringifyUser():String = {
+    var result:String = ""
+    val topic = "user"
+    result = s"JSONUser{topic:$topic|" +
+      s"user_name:${this.user_name}|" +
+      s"}";
+
+    result
+  }
 }

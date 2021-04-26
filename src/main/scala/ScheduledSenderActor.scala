@@ -3,9 +3,6 @@ import java.net.InetSocketAddress
 import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable, Props}
 import akka.io.{IO, Udp}
 import akka.util.ByteString
-import scala.concurrent.ExecutionContext.Implicits.global
-
-import scala.concurrent.duration._
 
 class ScheduledSenderActor(local: InetSocketAddress, remote: InetSocketAddress) extends Actor with ActorLogging {
 
@@ -13,7 +10,6 @@ class ScheduledSenderActor(local: InetSocketAddress, remote: InetSocketAddress) 
 
   IO(Udp) ! Udp.Bind(self, local)
 
-  //val scheduleCancellable: Cancellable = system.scheduler.schedule(0.seconds, 1.second, self, "hello")
 
 
   def receive = {
@@ -21,8 +17,8 @@ class ScheduledSenderActor(local: InetSocketAddress, remote: InetSocketAddress) 
       context.become(ready(sender()))
       var connectPub = new ConnectPub()
       connectPub.addTopic("users")
+      connectPub.addTopic("tweet")
       self ! connectPub.stringify()
-      //self ! "PublishUnsubscribe"
     }
   }
 
@@ -38,8 +34,7 @@ class ScheduledSenderActor(local: InetSocketAddress, remote: InetSocketAddress) 
       msg = tweet.stringifyUser()
       send ! Udp.Send(ByteString(msg), remote)
     }
-     // send ! Udp.Send(ByteString("from ready"), remote)
-     // println("From ready" + msg)
+
 
     case Udp.Received(data, remoteAddress) ⇒
       val ipAddress = remoteAddress.getAddress.getHostAddress
@@ -47,7 +42,6 @@ class ScheduledSenderActor(local: InetSocketAddress, remote: InetSocketAddress) 
       if (data.utf8String.startsWith("ACK")){
         println(data.utf8String)
       }
-      //log.info(s"we received ${data.utf8String} from IP Address: $ipAddress and port number: $port")
   }
 }
 

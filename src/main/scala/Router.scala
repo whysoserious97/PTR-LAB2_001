@@ -10,6 +10,7 @@ import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util.{Failure, Random, Success}
 import java.util.UUID.randomUUID
+import scala.language.postfixOps
 
 class Router extends Actor{
 

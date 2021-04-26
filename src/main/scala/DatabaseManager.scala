@@ -7,6 +7,7 @@ import scala.util.{Failure, Random, Success}
 import java.sql.{Connection, DriverManager, PreparedStatement, Statement}
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.DurationDouble
+import scala.language.postfixOps
 
 class DatabaseManager extends Actor {
 

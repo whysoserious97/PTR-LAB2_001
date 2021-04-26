@@ -4,6 +4,7 @@ import akka.actor.{Actor, ActorPath, ActorRef, ActorSelection, ActorSystem, OneF
 import akka.event.{Logging, LoggingAdapter}
 import akka.pattern.ask
 import akka.util.Timeout
+import scala.language.postfixOps
 
 import scala.Console._
 import scala.collection.mutable.ListBuffer

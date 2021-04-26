@@ -10,6 +10,7 @@ import akka.stream.scaladsl.{Sink, Source}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
+import scala.language.postfixOps
 
 class Connector extends Actor {
 
